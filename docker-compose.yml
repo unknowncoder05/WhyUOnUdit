@@ -1,0 +1,51 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: whyuon-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: miniwhyuon
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whyuon-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: miniwhyuon
+      DB_USER: root
+      DB_PASSWORD: root
+      WHYUON_JSON_PATH: /app/data/whyuon.json
+      LOAD_DATA_ON_STARTUP: "true"
+      CORS_ALLOWED_ORIGINS: "*"
+    volumes:
+      - ./whyuon.json:/app/data/whyuon.json:ro
+    ports:
+      - "8000:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: whyuon-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  mysql-data:

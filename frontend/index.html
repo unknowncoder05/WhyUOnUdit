@@ -1,138 +1,90 @@
 <!DOCTYPE html>
-<html lang ="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>WhyUOn</title>
-        <link rel="stylesheet" href="css/style.css">
-    </head>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhyUOn</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="header__brand">
+                <img class="header__logo" src="img/whyuon_logo.svg" alt="WhyUOn">
+                <h1>WHYUON</h1>
+            </div>
+            <ul>
+                <li><a href="#creadores">Creadores</a></li>
+                <li><a href="#publicaciones">Publicaciones</a></li>
+                <li><a href="https://sandbox.yerson.co/swagger-ui.html" target="_blank" rel="noreferrer">API</a></li>
+            </ul>
+            <a href="https://sandbox.yerson.co/api/reports/publications.csv" class="btn-login" target="_blank" rel="noreferrer">Exportar CSV</a>
+        </nav>
+    </header>
 
-    <body>
-        <header>
-            <nav>
-                <div class="header__brand">
-                    <img class="header__logo" src="img/whyuon_logo.svg">
-                    <h1>WHYUON</h1>
+    <main class="layout">
+        <section class="hero">
+            <div>
+                <p class="hero__eyebrow">Contenido conectado al backend</p>
+                <h2>Canales y publicaciones cargados desde la API de WHYUON</h2>
+                <p class="hero__copy">
+                    El frontend consume los endpoints del backend Spring Boot y muestra los canales importados desde <code>whyuon.json</code>.
+                </p>
+            </div>
+            <div class="hero__stats" id="stats">
+                <article>
+                    <span id="channels-count">0</span>
+                    <p>Canales</p>
+                </article>
+                <article>
+                    <span id="publications-count">0</span>
+                    <p>Publicaciones</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="perfiles" id="creadores">
+            <div class="section__header">
+                <div>
+                    <p class="section__eyebrow">Canales</p>
+                    <h3>Creadores importados</h3>
                 </div>
-                <ul>
-                    <li><a href="#">Inicio</a></li>
-                    <li><a href="#">Eventos</a></li>
-                    <li><a href="#">Creadores</a></li>
-                    <li><a href="#">Fundadores</a></li>
-                </ul>
-                <a href="#" class="btn-login">log In</a>
-            </nav>
-        </header>
-            <section class="perfiles">
-                <div class="carrusel__wrapper">
-                 <div class="carrusel__track">
+                <div class="section__actions">
+                    <button class="carrusel__btn carrusel__btn--prev" type="button" aria-label="Anterior">&#8249;</button>
+                    <button class="carrusel__btn carrusel__btn--next" type="button" aria-label="Siguiente">&#8250;</button>
+                </div>
+            </div>
+            <div class="carrusel__wrapper">
+                <div class="carrusel__track" id="channels-track"></div>
+            </div>
+            <p class="state-message" id="channels-state">Cargando canales...</p>
+        </section>
 
-                <!--Tarjeta de usuario de whyuon 1 -->
-                <article class="card">
-                    <!--Imagen de fondo de recuadro de usuario de whyuon-->
-                    <div class="card__banner">
-                        <img src="img\evasiontv_banner.jpg" alt="">  
-                    </div>
-                    <!---foto de perfil de whyuon-->
-                    <img class="card__avatar" src="img\evasiontv_logo.jpg" alt="">
-                    <!--info del usuario-->
-                    <div class="card__body">
-                        <h2 class="card__username">@evasiontvplay</h2>
-                        <p class="card__desc">Evasión TV es el canal de contenido outdoor de referencia. Sigue las mejores carreras por montaña en directo y no te pierdas entrevistas a los mejores profesionales del deporte. </p>
-                        <!--plataformas del usuario-->
-                        <ul class="card__platforms">
-                            <li><a href="https://www.youtube.com/@evasiontvplay">Youtube</a></li>                                                       
-                            <li><a href="evasiontv.es">Blog</a></li>
-                        </ul>
-                    </div>
-                </article>
+        <section class="publications" id="publicaciones">
+            <div class="section__header">
+                <div>
+                    <p class="section__eyebrow">Publicaciones</p>
+                    <h3>Ultimas entradas</h3>
+                </div>
+            </div>
+            <div class="table__wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Titulo</th>
+                            <th>Canal</th>
+                            <th>Plataforma</th>
+                            <th>Fecha</th>
+                            <th>Enlace</th>
+                        </tr>
+                    </thead>
+                    <tbody id="publications-body"></tbody>
+                </table>
+            </div>
+            <p class="state-message" id="publications-state">Cargando publicaciones...</p>
+        </section>
+    </main>
 
-                <!--Tarjeta de usuario de whyuon 2-->
-                <article class="card">
-                    <!--Imagen de fondo de recuadro de usuario de whyuon-->
-                    <div class="card__banner">
-                        <img src="img\evasiontv_banner.jpg" alt="">  
-                    </div>
-                    <!---foto de perfil de whyuon-->
-                    <img class="card__avatar" src="img\evasiontv_logo.jpg" alt="">
-                    <!--info del usuario-->
-                    <div class="card__body">
-                        <h2 class="card__username">@evasiontvplay</h2>
-                        <p class="card__desc">Evasión TV es el canal de contenido outdoor de referencia. Sigue las mejores carreras por montaña en directo y no te pierdas entrevistas a los mejores profesionales del deporte. </p>
-                        <!--plataformas del usuario-->
-                        <ul class="card__platforms">
-                            <li><a href="https://www.youtube.com/@evasiontvplay">Youtube</a></li>                                                       
-                            <li><a href="evasiontv.es">Blog</a></li>
-                        </ul>
-                    </div>
-                </article>
-
-                <!--Tarjeta de usuario de whyuon 3-->
-                <article class="card">
-                    <!--Imagen de fondo de recuadro de usuario de whyuon-->
-                    <div class="card__banner">
-                        <img src="img\evasiontv_banner.jpg" alt="">  
-                    </div>
-                    <!---foto de perfil de whyuon-->
-                    <img class="card__avatar" src="img\evasiontv_logo.jpg" alt="">
-                    <!--info del usuario-->
-                    <div class="card__body">
-                        <h2 class="card__username">@evasiontvplay</h2>
-                        <p class="card__desc">Evasión TV es el canal de contenido outdoor de referencia. Sigue las mejores carreras por montaña en directo y no te pierdas entrevistas a los mejores profesionales del deporte. </p>
-                        <!--plataformas del usuario-->
-                        <ul class="card__platforms">
-                            <li><a href="https://www.youtube.com/@evasiontvplay">Youtube</a></li>                                                       
-                            <li><a href="evasiontv.es">Blog</a></li>
-                        </ul>
-                    </div>
-                </article>
-
-                <!--Tarjeta de usuario de whyuon 4-->
-                <article class="card">
-                    <!--Imagen de fondo de recuadro de usuario de whyuon-->
-                    <div class="card__banner">
-                        <img src="img\evasiontv_banner.jpg" alt="">  
-                    </div>
-                    <!---foto de perfil de whyuon-->
-                    <img class="card__avatar" src="img\evasiontv_logo.jpg" alt="">
-                    <!--info del usuario-->
-                    <div class="card__body">
-                        <h2 class="card__username">@evasiontvplay</h2>
-                        <p class="card__desc">Evasión TV es el canal de contenido outdoor de referencia. Sigue las mejores carreras por montaña en directo y no te pierdas entrevistas a los mejores profesionales del deporte. </p>
-                        <!--plataformas del usuario-->
-                        <ul class="card__platforms">
-                            <li><a href="https://www.youtube.com/@evasiontvplay">Youtube</a></li>                                                       
-                            <li><a href="evasiontv.es">Blog</a></li>
-                        </ul>
-                    </div>
-                </article>
-
-                <!--Tarjeta de usuario de whyuon 5-->
-               <article class="card">
-                    <!--Imagen de fondo de recuadro de usuario de whyuon-->
-                    <div class="card__banner">
-                        <img src="img\evasiontv_banner.jpg" alt="">  
-                    </div>
-                    <!---foto de perfil de whyuon-->
-                    <img class="card__avatar" src="img\evasiontv_logo.jpg" alt="">
-                    <!--info del usuario-->
-                    <div class="card__body">
-                        <h2 class="card__username">@evasiontvplay</h2>
-                        <p class="card__desc">Evasión TV es el canal de contenido outdoor de referencia. Sigue las mejores carreras por montaña en directo y no te pierdas entrevistas a los mejores profesionales del deporte. </p>
-                        <!--plataformas del usuario-->
-                        <ul class="card__platforms">
-                            <li><a href="https://www.youtube.com/@evasiontvplay">Youtube</a></li>                                                       
-                            <li><a href="evasiontv.es">Blog</a></li>
-                        </ul>
-                    </div>
-                </article> 
-
-
-              </div>
-            </div> 
-            <button class="carrusel__btn carrusel__btn--prev">&#8249;</button>
-            <button class="carrusel__btn carrusel__btn--next">&#8250;</button>       
-          </section>
-        <script src="js/script.js"></script>
-    </body>
+    <script src="js/script.js"></script>
+</body>
 </html>
