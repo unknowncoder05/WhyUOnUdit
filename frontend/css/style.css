@@ -15,15 +15,120 @@ body {
     padding: 2rem;
 }
 
+/*=============
+    Nav bar/header
+=============*/
+header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e4e6ea;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  margin-bottom: 16px;
+}
+
+.header__brand{
+    display:flex;
+    align-items: flex;
+    gap:10px;
+}
+
+.header__logo{
+ width: 40px;
+ height: 40px;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
+  height: 60px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+}
+
+nav ul a {
+  text-decoration: none;
+  font-size: 0.9rem;
+  color: #606770;
+  transition: color 0.15s ease;
+}
+
+nav ul a:hover {
+  color: #1a1a1a;
+}
+
+.btn-login {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #185fa5;
+  padding: 8px 20px;
+  border-radius: 20px;
+  transition: background-color 0.15s ease;
+}
+
+.btn-login:hover {
+  background-color: #0c447c;
+}
+
 /* =======================
     Sección Contenedora 
 ======================== */
 .perfiles {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minimax(240px, 400px));
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+}
+
+.carrusel__wrapper {
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.carrusel__wrapper::-webkit-scrollbar{
+    display: none;
+}
+
+.carrusel__track {
+    display: flex;
     gap: 1.5rem;
-    max-width: 1100px;
-    margin: 0 outo;
+    transition: transform 0.4s ease;
+}
+.carrusel__btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #185fa5;
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.carrusel__btn:hover {
+    background-color: #0c447c;
+}
+
+.carrusel__btn--prev {
+    left:-20px;
+}
+
+.carrusel__btn--next {
+    right: -20px;
 }
 
 /* ====================
@@ -36,7 +141,8 @@ body {
     border: 1px solid #e4e6ae;
     position: relative;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    max-width: 400px;
+    width: 240px;
+    flex-shrink: 0;
 }
 
 .card:hover {
