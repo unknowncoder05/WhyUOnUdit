@@ -94,17 +94,21 @@ SELECT name, COUNT(*) AS posts FROM channels c
 
 ## Desafios
 
-### Desafio 1 - Listar publicaciones desde el JSON
+### Desafio 1 - Listar publicaciones desde el JSON  ✅
 
 Leer `whyuon.json` (con publicaciones de YouTube y blogs) y exponer un endpoint que devuelva la lista con titulo, plataforma, fecha y enlace.
+
+Endpoint: `GET /api/publications`
 
 ### Desafio 2 - Persistir en base de datos  ✅
 
 Las publicaciones se almacenan en MySQL mediante JPA. La carga inicial la hace `JsonLoader` al arrancar.
 
-### Desafio 3 - Generar informes
+### Desafio 3 - Generar informes  ✅
 
-Endpoint que descarga un fichero CSV / TXT / Excel con todas las publicaciones, ordenadas para que el uso sea comodo.
+Endpoint que descarga un fichero CSV con todas las publicaciones, ordenadas por fecha descendente para que el uso sea comodo.
+
+Endpoint: `GET /api/reports/publications.csv`
 
 ## Tests
 
