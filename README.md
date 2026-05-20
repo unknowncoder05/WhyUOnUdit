@@ -83,10 +83,10 @@ Endpoints (cuando se anadan los controladores):
 ```sql
 USE miniwhyuon;
 
-SELECT COUNT(*) FROM publications;                                          -- 24
+SELECT COUNT(*) FROM publications;                                          -- 23
 SELECT platform, COUNT(*) FROM publications p
   JOIN channels c ON c.id = p.channel_id
-  GROUP BY platform;                                                        -- youtube 12, blog 12
+  GROUP BY platform;                                                        -- youtube 12, blog 11
 SELECT name, COUNT(*) AS posts FROM channels c
   JOIN publications p ON p.channel_id = c.id
   GROUP BY name ORDER BY posts DESC;
