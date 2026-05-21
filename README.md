@@ -160,5 +160,4 @@ GROUP BY c.name ORDER BY posts DESC;
 
 ## Notas
 
-- `.claude/` esta en `.gitignore`: cada desarrollador con Claude Code tiene su propia configuracion local que no se versiona.
 - El backend usa `Hibernate ddl-auto: none` y `schema.sql` para que el esquema este bajo control de version, no autogenerado.
