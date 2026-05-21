@@ -77,15 +77,63 @@ function renderChannel(channel) {
     `;
 }
 
+// Convierte segundos en "mm:ss" o "h:mm:ss" para mostrar duración en YouTube.
+function formatDuration(seconds) {
+    if (seconds == null || seconds < 0) return '';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
+// Decide la imagen de cabecera de cada card:
+//   1) imagen del post/video (image_url del JSON)
+//   2) avatar del autor (solo blogs que lo tengan)
+//   3) degradado de marca (placeholder CSS, sin <img>)
+function buildPublicationMedia(publication) {
+    const safeTitle = escapeHtml(publication.title);
+    const duration = publication.durationSeconds
+        ? `<span class="publication-card__duration">${formatDuration(publication.durationSeconds)}</span>`
+        : '';
+
+    if (publication.imageUrl) {
+        return `
+            <div class="publication-card__media">
+                <img src="${escapeHtml(publication.imageUrl)}" alt="${safeTitle}" loading="lazy" decoding="async">
+                ${duration}
+            </div>
+        `;
+    }
+    if (publication.authorImageUrl) {
+        return `
+            <div class="publication-card__media publication-card__media--avatar">
+                <img src="${escapeHtml(publication.authorImageUrl)}" alt="${escapeHtml(publication.authorName || '')}" loading="lazy" decoding="async">
+                ${duration}
+            </div>
+        `;
+    }
+    return `<div class="publication-card__media">${duration}</div>`;
+}
+
 function renderPublication(publication) {
+    const channelLine = publication.authorName
+        ? `<strong>${escapeHtml(publication.channelName)}</strong> · ${escapeHtml(publication.authorName)}`
+        : `<strong>${escapeHtml(publication.channelName)}</strong>`;
+
     return `
-        <tr>
-            <td>${escapeHtml(publication.title)}</td>
-            <td>${escapeHtml(publication.channelName)}</td>
-            <td>${escapeHtml(publication.platform)}</td>
-            <td>${formatDate(publication.datePublished)}</td>
-            <td><a href="${escapeHtml(publication.url)}" target="_blank" rel="noreferrer">Abrir</a></td>
-        </tr>
+        <article class="publication-card">
+            ${buildPublicationMedia(publication)}
+            <div class="publication-card__body">
+                <div class="publication-card__meta">
+                    <span class="publication-card__platform">${escapeHtml(publication.platform)}</span>
+                    <span>${formatDate(publication.datePublished)}</span>
+                </div>
+                <h3 class="publication-card__title">${escapeHtml(publication.title)}</h3>
+                <p class="publication-card__channel">${channelLine}</p>
+                <a class="publication-card__link" href="${escapeHtml(publication.url)}" target="_blank" rel="noreferrer">Abrir →</a>
+            </div>
+        </article>
     `;
 }
 
@@ -104,21 +152,23 @@ function skeletonCard() {
     `;
 }
 
-function skeletonRow() {
+function skeletonPublicationCard() {
     return `
-        <tr class="skeleton-row" aria-hidden="true">
-            <td><span class="skeleton"></span></td>
-            <td><span class="skeleton"></span></td>
-            <td><span class="skeleton"></span></td>
-            <td><span class="skeleton"></span></td>
-            <td><span class="skeleton"></span></td>
-        </tr>
+        <article class="skeleton-publication-card" aria-hidden="true">
+            <div class="skeleton-publication-card__media skeleton"></div>
+            <div class="skeleton-publication-card__body">
+                <div class="skeleton-publication-card__line skeleton short"></div>
+                <div class="skeleton-publication-card__line skeleton long"></div>
+                <div class="skeleton-publication-card__line skeleton long"></div>
+                <div class="skeleton-publication-card__line skeleton short"></div>
+            </div>
+        </article>
     `;
 }
 
 function showSkeletons() {
     track.innerHTML = Array.from({ length: 4 }, skeletonCard).join('');
-    publicationsBody.innerHTML = Array.from({ length: 6 }, skeletonRow).join('');
+    publicationsBody.innerHTML = Array.from({ length: 6 }, skeletonPublicationCard).join('');
     channelsState.textContent = '';
     publicationsState.textContent = '';
 }
@@ -139,7 +189,7 @@ async function loadData() {
         const publications = await publicationsResponse.json();
 
         track.innerHTML = channels.map(renderChannel).join('');
-        publicationsBody.innerHTML = publications.slice(0, 10).map(renderPublication).join('');
+        publicationsBody.innerHTML = publications.map(renderPublication).join('');
 
         document.querySelector('#channels-count').textContent = channels.length;
         document.querySelector('#publications-count').textContent = publications.length;
