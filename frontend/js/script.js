@@ -5,6 +5,13 @@ const btnNext = document.querySelector('.carrusel__btn--next');
 const channelsState = document.querySelector('#channels-state');
 const publicationsState = document.querySelector('#publications-state');
 const publicationsBody = document.querySelector('#publications-body');
+const paginationContainer = document.querySelector('#pagination-container');
+const publicationsSection = document.querySelector('#publicaciones');
+
+// Tamaño de página del listado de publicaciones. Coincide con el default del backend.
+const PAGE_SIZE = 12;
+let currentPage = 0;
+let totalPages = 0;
 
 // Detecta entorno automáticamente:
 //   - Si la página se sirve desde localhost (Docker o servidor local) → backend local en 8000.
@@ -178,7 +185,7 @@ async function loadData() {
     try {
         const [channelsResponse, publicationsResponse] = await Promise.all([
             fetch(`${API_BASE_URL}/channels`),
-            fetch(`${API_BASE_URL}/publications`)
+            fetch(`${API_BASE_URL}/publications?page=0&size=${PAGE_SIZE}`)
         ]);
 
         if (!channelsResponse.ok || !publicationsResponse.ok) {
@@ -186,23 +193,106 @@ async function loadData() {
         }
 
         const channels = await channelsResponse.json();
-        const publications = await publicationsResponse.json();
+        const publicationsPage = await publicationsResponse.json();
 
         track.innerHTML = channels.map(renderChannel).join('');
-        publicationsBody.innerHTML = publications.map(renderPublication).join('');
+
+        renderPublicationsPage(publicationsPage);
 
         document.querySelector('#channels-count').textContent = channels.length;
-        document.querySelector('#publications-count').textContent = publications.length;
+        document.querySelector('#publications-count').textContent = publicationsPage.totalItems;
 
         channelsState.textContent = channels.length ? '' : 'No hay canales disponibles.';
-        publicationsState.textContent = publications.length ? '' : 'No hay publicaciones disponibles.';
+        publicationsState.textContent = publicationsPage.totalItems ? '' : 'No hay publicaciones disponibles.';
     } catch (error) {
         track.innerHTML = '';
         publicationsBody.innerHTML = '';
+        paginationContainer.innerHTML = '';
         channelsState.textContent = 'Error al cargar los canales desde el backend.';
         publicationsState.textContent = 'Error al cargar las publicaciones desde el backend.';
         console.error(error);
     }
+}
+
+// Pinta una página completa de publicaciones (reemplaza lo que había)
+// y actualiza los controles de paginación.
+function renderPublicationsPage(page) {
+    currentPage = page.currentPage;
+    totalPages = page.totalPages;
+    publicationsBody.innerHTML = page.content.map(renderPublication).join('');
+    renderPagination();
+}
+
+// Pide al backend la página N y la pinta. Hace scroll suave al inicio de
+// la sección para que el usuario no se quede a media pantalla.
+async function goToPage(page) {
+    if (page < 0 || page >= totalPages || page === currentPage) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/publications?page=${page}&size=${PAGE_SIZE}`);
+        if (!response.ok) throw new Error('No se pudo cargar la página');
+        const data = await response.json();
+        renderPublicationsPage(data);
+        publicationsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+        console.error(error);
+        publicationsState.textContent = 'Error al cargar la página.';
+    }
+}
+
+// Calcula qué números de página mostrar (con '...' cuando hay muchas).
+//   total = 5,  current = 2  → [0, 1, 2, 3, 4]
+//   total = 10, current = 0  → [0, 1, 2, '...', 9]
+//   total = 10, current = 4  → [0, '...', 3, 4, 5, '...', 9]
+//   total = 10, current = 9  → [0, '...', 7, 8, 9]
+function getPageNumbers(current, total) {
+    if (total <= 7) {
+        return Array.from({ length: total }, (_, i) => i);
+    }
+    const pages = [0];
+    if (current > 2) pages.push('...');
+
+    const start = Math.max(1, current - 1);
+    const end = Math.min(total - 2, current + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (current < total - 3) pages.push('...');
+    pages.push(total - 1);
+    return pages;
+}
+
+function renderPagination() {
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+    }
+
+    const numbers = getPageNumbers(currentPage, totalPages);
+    const prevDisabled = currentPage === 0 ? 'disabled' : '';
+    const nextDisabled = currentPage === totalPages - 1 ? 'disabled' : '';
+
+    const parts = [`<nav class="pagination" aria-label="Paginacion de publicaciones">`];
+    parts.push(`<button class="pagination__btn" data-page="${currentPage - 1}" ${prevDisabled} aria-label="Anterior">&laquo;</button>`);
+
+    for (const n of numbers) {
+        if (n === '...') {
+            parts.push(`<span class="pagination__ellipsis">...</span>`);
+        } else {
+            const isActive = n === currentPage;
+            const activeClass = isActive ? ' pagination__btn--active' : '';
+            const ariaCurrent = isActive ? ' aria-current="page"' : '';
+            parts.push(`<button class="pagination__btn${activeClass}" data-page="${n}"${ariaCurrent}>${n + 1}</button>`);
+        }
+    }
+
+    parts.push(`<button class="pagination__btn" data-page="${currentPage + 1}" ${nextDisabled} aria-label="Siguiente">&raquo;</button>`);
+    parts.push(`</nav>`);
+
+    paginationContainer.innerHTML = parts.join('');
+
+    paginationContainer.querySelectorAll('.pagination__btn:not(:disabled):not(.pagination__btn--active)')
+        .forEach((btn) => {
+            btn.addEventListener('click', () => goToPage(parseInt(btn.dataset.page, 10)));
+        });
 }
 
 loadData();
