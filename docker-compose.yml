@@ -29,11 +29,8 @@ services:
       DB_NAME: miniwhyuon
       DB_USER: root
       DB_PASSWORD: root
-      WHYUON_JSON_PATH: /app/data/whyuon.json
       LOAD_DATA_ON_STARTUP: "true"
       CORS_ALLOWED_ORIGINS: "*"
-    volumes:
-      - ./whyuon.json:/app/data/whyuon.json:ro
     ports:
       - "8000:8080"
 
