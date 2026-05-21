@@ -99,8 +99,17 @@ public class PublicationService {
 
     public String buildCsvReport() {
         StringBuilder csv = new StringBuilder();
-        csv.append('﻿'); // BOM para compatibilidad con Excel
-        csv.append("Plataforma;Canal;Autor;Título;Fecha de publicación;Formato;Duración;URL\n");
+        csv.append('\uFEFF'); // BOM UTF-8 para que Excel reconozca tildes y eñes
+        csv.append(String.join(";",
+                escapeCsv("Plataforma"),
+                escapeCsv("Canal"),
+                escapeCsv("Autor"),
+                escapeCsv("Título"),
+                escapeCsv("Fecha de publicación"),
+                escapeCsv("Formato"),
+                escapeCsv("Duración"),
+                escapeCsv("URL")
+        )).append('\n');
         for (PublicationResponse publication : getPublications()) {
             csv.append(escapeCsv(capitalizePlatform(publication.platform()))).append(';')
                     .append(escapeCsv(publication.channelName())).append(';')
@@ -131,11 +140,12 @@ public class PublicationService {
     }
 
     private String capitalizePlatform(String platform) {
-        if (platform == null) return "";
+        if (platform == null || platform.isBlank()) return "";
         return switch (platform.toLowerCase()) {
             case "youtube" -> "YouTube";
-            case "blog" -> "Blog";
-            default -> platform;
+            case "tiktok" -> "TikTok";
+            // Para cualquier plataforma nueva (instagram, twitch, blog…) se capitaliza la inicial.
+            default -> Character.toUpperCase(platform.charAt(0)) + platform.substring(1).toLowerCase();
         };
     }
 
