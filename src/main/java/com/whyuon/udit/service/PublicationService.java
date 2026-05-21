@@ -8,6 +8,7 @@ import com.whyuon.udit.repository.PublicationRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,19 +72,44 @@ public class PublicationService {
 
     public String buildCsvReport() {
         StringBuilder csv = new StringBuilder();
-        csv.append("title,channel,platform,author,date_published,url,format,duration_seconds\n");
+        csv.append('﻿'); // BOM para compatibilidad con Excel
+        csv.append("Plataforma;Canal;Autor;Título;Fecha de publicación;Formato;Duración;URL\n");
         for (PublicationResponse publication : getPublications()) {
-            csv.append(escapeCsv(publication.title())).append(',')
-                    .append(escapeCsv(publication.channelName())).append(',')
-                    .append(escapeCsv(publication.platform())).append(',')
-                    .append(escapeCsv(publication.authorName())).append(',')
-                    .append(escapeCsv(String.valueOf(publication.datePublished()))).append(',')
-                    .append(escapeCsv(publication.url())).append(',')
-                    .append(escapeCsv(publication.format())).append(',')
-                    .append(escapeCsv(publication.durationSeconds() == null ? "" : publication.durationSeconds().toString()))
+            csv.append(escapeCsv(capitalizePlatform(publication.platform()))).append(';')
+                    .append(escapeCsv(publication.channelName())).append(';')
+                    .append(escapeCsv(publication.authorName())).append(';')
+                    .append(escapeCsv(publication.title())).append(';')
+                    .append(escapeCsv(formatDate(publication.datePublished()))).append(';')
+                    .append(escapeCsv(publication.format())).append(';')
+                    .append(escapeCsv(formatDuration(publication.durationSeconds()))).append(';')
+                    .append(escapeCsv(publication.url()))
                     .append('\n');
         }
         return csv.toString();
+    }
+
+    private String formatDate(LocalDateTime dateTime) {
+        if (dateTime == null) return "";
+        return dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
+
+    private String formatDuration(Integer seconds) {
+        if (seconds == null) return "";
+        int h = seconds / 3600;
+        int m = (seconds % 3600) / 60;
+        int s = seconds % 60;
+        if (h > 0) return String.format("%dh %02dm %02ds", h, m, s);
+        if (m > 0) return String.format("%dm %02ds", m, s);
+        return String.format("%ds", s);
+    }
+
+    private String capitalizePlatform(String platform) {
+        if (platform == null) return "";
+        return switch (platform.toLowerCase()) {
+            case "youtube" -> "YouTube";
+            case "blog" -> "Blog";
+            default -> platform;
+        };
     }
 
     private PublicationResponse toPublicationResponse(Publication publication) {
