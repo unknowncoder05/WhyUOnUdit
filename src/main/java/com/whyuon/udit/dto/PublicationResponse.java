@@ -8,6 +8,7 @@ public record PublicationResponse(
         String channelName,
         String platform,
         String authorName,
+        String authorImageUrl,
         String url,
         String imageUrl,
         String description,
