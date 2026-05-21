@@ -583,6 +583,65 @@ nav ul a:hover {
 .skeleton-card__line.short { width: 50%; }
 .skeleton-card__line.long  { width: 80%; }
 
+/* =======================
+    Paginación de publicaciones
+======================== */
+.publications__pagination {
+    margin-top: 28px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pagination__btn {
+    min-width: 38px;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    color: var(--ink);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.pagination__btn:hover:not(:disabled):not(.pagination__btn--active) {
+    background-color: var(--surface-muted);
+    border-color: rgba(0, 92, 83, 0.3);
+}
+
+.pagination__btn--active {
+    background-color: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+    cursor: default;
+}
+
+.pagination__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination__btn:active:not(:disabled):not(.pagination__btn--active) {
+    transform: translateY(1px);
+}
+
+.pagination__ellipsis {
+    color: var(--muted);
+    padding: 0 4px;
+    user-select: none;
+}
+
 .skeleton-publication-card {
     background-color: var(--surface);
     border: 1px solid var(--border);
