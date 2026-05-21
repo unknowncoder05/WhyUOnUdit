@@ -93,6 +93,7 @@ public class PublicationService {
                 publication.getChannel().getName(),
                 publication.getChannel().getPlatform(),
                 publication.getAuthor() == null ? null : publication.getAuthor().getName(),
+                publication.getAuthor() == null ? null : publication.getAuthor().getImageUrl(),
                 publication.getUrl(),
                 publication.getImageUrl(),
                 publication.getDescription(),

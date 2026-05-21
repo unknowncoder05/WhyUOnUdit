@@ -393,33 +393,145 @@ nav ul a:hover {
     padding: 28px;
 }
 
-.table__wrapper {
-    overflow-x: auto;
+/* =======================
+    Rejilla de publicaciones
+======================== */
+.publications__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
 }
 
-table {
+.publication-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+                box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 0.25s ease;
+    animation: cardFadeUp 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.publication-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: rgba(0, 92, 83, 0.25);
+}
+
+.publication-card__media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(135deg, #0b6f64 0%, #c8eadb 100%);
+    overflow: hidden;
+}
+
+.publication-card__media img {
     width: 100%;
-    border-collapse: collapse;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
 }
 
-th,
-td {
-    text-align: left;
-    padding: 16px 12px;
-    border-bottom: 1px solid var(--border);
+.publication-card:hover .publication-card__media img {
+    transform: scale(1.04);
 }
 
-th {
+/* Cuando no hay imagen del post, mostramos el avatar del autor centrado */
+.publication-card__media--avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.publication-card__media--avatar img {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.publication-card__duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(23, 32, 42, 0.78);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+}
+
+.publication-card__body {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.publication-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     color: var(--muted);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: 0.78rem;
 }
 
-td a {
+.publication-card__platform {
+    background-color: var(--surface-muted);
+    color: var(--accent-strong);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+}
+
+.publication-card__title {
+    font-size: 0.98rem;
+    line-height: 1.35;
+    color: var(--ink);
+    margin: 0;
+    /* Recorta a 3 líneas con puntos suspensivos */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.publication-card__channel {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin: 0;
+}
+
+.publication-card__channel strong {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.publication-card__link {
+    margin-top: auto;
+    align-self: flex-start;
     color: var(--accent);
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.85rem;
+    transition: color 0.15s ease;
+}
+
+.publication-card__link:hover {
+    color: var(--accent-strong);
 }
 
 .state-message {
@@ -471,36 +583,34 @@ td a {
 .skeleton-card__line.short { width: 50%; }
 .skeleton-card__line.long  { width: 80%; }
 
-.skeleton-row td {
-    padding: 18px 12px;
+.skeleton-publication-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
-.skeleton-row .skeleton {
-    height: 14px;
-    width: 100%;
+.skeleton-publication-card__media {
+    aspect-ratio: 16 / 9;
 }
+.skeleton-publication-card__body {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.skeleton-publication-card__line {
+    height: 12px;
+    border-radius: 6px;
+}
+.skeleton-publication-card__line.short { width: 40%; }
+.skeleton-publication-card__line.long  { width: 90%; }
 
 @keyframes skeletonShimmer {
     0%   { background-position: 100% 0; }
     100% { background-position: -100% 0; }
 }
-
-/*================
-    Filas de tabla con entrada suave
-================*/
-tbody tr {
-    animation: rowFadeIn 0.35s ease both;
-}
-tbody tr:nth-child(odd)  { background-color: rgba(23, 32, 42, 0.015); }
-
-@keyframes rowFadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-td a {
-    transition: color 0.15s ease;
-}
-td a:hover { color: var(--accent-strong); }
 
 code {
     font-family: Consolas, Monaco, monospace;
