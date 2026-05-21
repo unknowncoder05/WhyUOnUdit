@@ -1,10 +1,15 @@
 package com.whyuon.udit.service;
 
 import com.whyuon.udit.dto.ChannelSummaryResponse;
+import com.whyuon.udit.dto.PaginatedPublicationsResponse;
 import com.whyuon.udit.dto.PublicationResponse;
 import com.whyuon.udit.model.Channel;
 import com.whyuon.udit.model.Publication;
 import com.whyuon.udit.repository.PublicationRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,6 +31,28 @@ public class PublicationService {
         return publicationRepository.findAllByOrderByDatePublishedDesc().stream()
                 .map(this::toPublicationResponse)
                 .toList();
+    }
+
+    /**
+     * Devuelve una página de publicaciones ordenadas por fecha descendente.
+     * Pensado para el listado de la home: el frontend solo pide la página
+     * que está mostrando, no toda la BD.
+     */
+    public PaginatedPublicationsResponse getPublicationsPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "datePublished"));
+        Page<Publication> result = publicationRepository.findAll(pageable);
+
+        List<PublicationResponse> content = result.getContent().stream()
+                .map(this::toPublicationResponse)
+                .toList();
+
+        return new PaginatedPublicationsResponse(
+                content,
+                result.getNumber(),
+                result.getTotalPages(),
+                result.getTotalElements(),
+                result.getSize()
+        );
     }
 
     public List<ChannelSummaryResponse> getChannelSummaries() {

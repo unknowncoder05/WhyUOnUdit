@@ -1,13 +1,14 @@
 package com.whyuon.udit.controller;
 
 import com.whyuon.udit.dto.ChannelSummaryResponse;
-import com.whyuon.udit.dto.PublicationResponse;
+import com.whyuon.udit.dto.PaginatedPublicationsResponse;
 import com.whyuon.udit.service.PublicationService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.charset.StandardCharsets;
@@ -24,8 +25,11 @@ public class PublicationController {
     }
 
     @GetMapping("/publications")
-    public List<PublicationResponse> getPublications() {
-        return publicationService.getPublications();
+    public PaginatedPublicationsResponse getPublications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        return publicationService.getPublicationsPage(page, size);
     }
 
     @GetMapping("/channels")
