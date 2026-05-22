@@ -49,16 +49,17 @@ CREATE TABLE IF NOT EXISTS authors (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS publications (
-    id                BIGINT       NOT NULL AUTO_INCREMENT,
-    channel_id        BIGINT       NOT NULL,
-    author_id         BIGINT       NULL,                       -- NULL para YouTube
-    url               VARCHAR(500) NOT NULL,
-    image_url         VARCHAR(500),
-    date_published    DATETIME     NOT NULL,
-    description       TEXT,
-    publication_id    VARCHAR(255),                            -- solo YouTube (id de vídeo)
-    format            VARCHAR(20),                             -- solo YouTube: 'video' | 'short'
-    duration_seconds  INT,                                     -- solo YouTube
+    id              BIGINT       NOT NULL AUTO_INCREMENT,
+    channel_id      BIGINT       NOT NULL,
+    author_id       BIGINT       NULL,                         -- NULL para YouTube
+    url             VARCHAR(500) NOT NULL,
+    image_url       VARCHAR(500),
+    date_published  DATETIME     NOT NULL,
+    description     TEXT,
+    -- Atributos específicos de cada plataforma. Se guardan aquí en JSON
+    -- para que añadir Instagram, Twitch, X... no requiera cambiar el esquema.
+    -- YouTube usa hoy: {"publication_id": "ALeXzxKF5jg", "format": "video", "duration_seconds": 1974}
+    extra_data      JSON,
     PRIMARY KEY (id),
     UNIQUE KEY uk_publications_url (url),
     KEY idx_publications_date (date_published),

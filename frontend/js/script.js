@@ -108,8 +108,11 @@ function formatDuration(seconds) {
 //   3) degradado de marca (placeholder CSS, sin <img>)
 function buildPublicationMedia(publication) {
     const safeTitle = escapeHtml(publication.title);
-    const duration = publication.durationSeconds
-        ? `<span class="publication-card__duration">${formatDuration(publication.durationSeconds)}</span>`
+    // Los campos especificos de cada plataforma viven en extraData.
+    // Para YouTube: { publication_id, format, duration_seconds }.
+    const durationSeconds = publication.extraData && publication.extraData.duration_seconds;
+    const duration = durationSeconds
+        ? `<span class="publication-card__duration">${formatDuration(durationSeconds)}</span>`
         : '';
 
     // Pintamos siempre desde nuestro backend. Si la publicacion no tiene
