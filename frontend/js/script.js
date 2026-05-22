@@ -60,14 +60,22 @@ function escapeHtml(value) {
 
 function renderChannel(channel) {
     const safeName = escapeHtml(channel.name);
-    const bannerSrc = escapeHtml(channel.imageUrl || fallbackBanner);
-    const avatarSrc = escapeHtml(channel.imageUrl || fallbackAvatar);
+
+    // Si el canal tiene una publicacion reciente, usamos su imagen archivada
+    // en BD (siempre disponible aunque YouTube/blog borre el contenido).
+    // Si no, caemos al banner por defecto en disco.
+    const archivedSrc = channel.latestPublicationId
+        ? `${API_BASE_URL}/publications/${channel.latestPublicationId}/image`
+        : fallbackBanner;
+    const onError = `onerror="this.onerror=null;this.src='${fallbackBanner}';"`;
+    const onErrorAvatar = `onerror="this.onerror=null;this.src='${fallbackAvatar}';"`;
+
     return `
         <article class="card">
             <div class="card__banner">
-                <img src="${bannerSrc}" alt="${safeName}" loading="lazy" decoding="async">
+                <img src="${archivedSrc}" alt="${safeName}" loading="lazy" decoding="async" ${onError}>
             </div>
-            <img class="card__avatar" src="${avatarSrc}" alt="${safeName}" loading="lazy" decoding="async">
+            <img class="card__avatar" src="${archivedSrc}" alt="${safeName}" loading="lazy" decoding="async" ${onErrorAvatar}>
             <div class="card__body">
                 <div class="card__meta">
                     <span class="card__pill">${escapeHtml(channel.platform)}</span>
@@ -95,8 +103,8 @@ function formatDuration(seconds) {
 }
 
 // Decide la imagen de cabecera de cada card:
-//   1) imagen del post/video (image_url del JSON)
-//   2) avatar del autor (solo blogs que lo tengan)
+//   1) imagen archivada en BD (siempre que existe, sobrevive a borrados en origen)
+//   2) avatar del autor (solo blogs que lo tengan, como fallback)
 //   3) degradado de marca (placeholder CSS, sin <img>)
 function buildPublicationMedia(publication) {
     const safeTitle = escapeHtml(publication.title);
@@ -104,23 +112,20 @@ function buildPublicationMedia(publication) {
         ? `<span class="publication-card__duration">${formatDuration(publication.durationSeconds)}</span>`
         : '';
 
-    if (publication.imageUrl) {
-        return `
-            <div class="publication-card__media">
-                <img src="${escapeHtml(publication.imageUrl)}" alt="${safeTitle}" loading="lazy" decoding="async">
-                ${duration}
-            </div>
-        `;
-    }
-    if (publication.authorImageUrl) {
-        return `
-            <div class="publication-card__media publication-card__media--avatar">
-                <img src="${escapeHtml(publication.authorImageUrl)}" alt="${escapeHtml(publication.authorName || '')}" loading="lazy" decoding="async">
-                ${duration}
-            </div>
-        `;
-    }
-    return `<div class="publication-card__media">${duration}</div>`;
+    // Pintamos siempre desde nuestro backend. Si la publicacion no tiene
+    // imagen archivada, el endpoint responde 404 y onerror cae al fallback.
+    const archivedSrc = `${API_BASE_URL}/publications/${publication.id}/image`;
+    const fallbackSrc = publication.authorImageUrl ? escapeHtml(publication.authorImageUrl) : '';
+    const onError = fallbackSrc
+        ? `onerror="this.onerror=null;this.src='${fallbackSrc}';this.parentElement.classList.add('publication-card__media--avatar');"`
+        : `onerror="this.onerror=null;this.remove();"`;
+
+    return `
+        <div class="publication-card__media">
+            <img src="${archivedSrc}" alt="${safeTitle}" loading="lazy" decoding="async" ${onError}>
+            ${duration}
+        </div>
+    `;
 }
 
 function renderPublication(publication) {

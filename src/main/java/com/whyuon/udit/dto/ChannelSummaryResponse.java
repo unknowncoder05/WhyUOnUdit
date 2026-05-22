@@ -11,6 +11,7 @@ public record ChannelSummaryResponse(
         String description,
         long publicationsCount,
         LocalDateTime latestPublicationDate,
-        String latestPublicationUrl
+        String latestPublicationUrl,
+        Long latestPublicationId
 ) {
 }

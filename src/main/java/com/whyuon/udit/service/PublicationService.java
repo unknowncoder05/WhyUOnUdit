@@ -71,6 +71,7 @@ public class PublicationService {
                     || publication.getDatePublished().isAfter(accumulator.latestPublicationDate)) {
                 accumulator.latestPublicationDate = publication.getDatePublished();
                 accumulator.latestPublicationUrl = publication.getUrl();
+                accumulator.latestPublicationId = publication.getId();
             }
             if (accumulator.imageUrl == null && publication.getImageUrl() != null) {
                 accumulator.imageUrl = publication.getImageUrl();
@@ -84,14 +85,15 @@ public class PublicationService {
         for (ChannelAccumulator accumulator : channels.values()) {
             response.add(new ChannelSummaryResponse(
                     accumulator.channel.getName(),
-                    accumulator.channel.getPlatform(),
+                    accumulator.channel.getPlatform().getCode(),
                     accumulator.channel.getExternalId(),
                     buildChannelUrl(accumulator.channel),
                     accumulator.imageUrl,
                     accumulator.description,
                     accumulator.publicationsCount,
                     accumulator.latestPublicationDate,
-                    accumulator.latestPublicationUrl
+                    accumulator.latestPublicationUrl,
+                    accumulator.latestPublicationId
             ));
         }
         return response;
@@ -154,7 +156,7 @@ public class PublicationService {
                 publication.getId(),
                 buildTitle(publication),
                 publication.getChannel().getName(),
-                publication.getChannel().getPlatform(),
+                publication.getChannel().getPlatform().getCode(),
                 publication.getAuthor() == null ? null : publication.getAuthor().getName(),
                 publication.getAuthor() == null ? null : publication.getAuthor().getImageUrl(),
                 publication.getUrl(),
@@ -193,7 +195,7 @@ public class PublicationService {
     }
 
     private String buildChannelUrl(Channel channel) {
-        if ("youtube".equalsIgnoreCase(channel.getPlatform())) {
+        if ("youtube".equalsIgnoreCase(channel.getPlatform().getCode())) {
             return "https://www.youtube.com/channel/" + channel.getExternalId();
         }
         return channel.getExternalId();
@@ -211,6 +213,7 @@ public class PublicationService {
         private long publicationsCount;
         private LocalDateTime latestPublicationDate;
         private String latestPublicationUrl;
+        private Long latestPublicationId;
 
         private ChannelAccumulator(Channel channel) {
             this.channel = channel;
