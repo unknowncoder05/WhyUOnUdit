@@ -12,12 +12,12 @@ public interface PublicationRepository extends JpaRepository<Publication, Long> 
 
     boolean existsByUrl(String url);
 
-    @EntityGraph(attributePaths = {"channel", "author"})
+    @EntityGraph(attributePaths = {"channel", "channel.platform", "author"})
     List<Publication> findAllByOrderByDatePublishedDesc();
 
     // Sobrescribimos el findAll paginado para cargar channel y author en el
     // mismo SELECT (evita LazyInitializationException al mapear a DTO).
     @Override
-    @EntityGraph(attributePaths = {"channel", "author"})
+    @EntityGraph(attributePaths = {"channel", "channel.platform", "author"})
     Page<Publication> findAll(Pageable pageable);
 }
