@@ -11,7 +11,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(
@@ -44,14 +49,20 @@ public class Publication {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "publication_id")
-    private String publicationId;
-
-    @Column(length = 20)
-    private String format;
-
-    @Column(name = "duration_seconds")
-    private Integer durationSeconds;
+    /**
+     * Atributos específicos de cada plataforma. Se guardan en una columna
+     * JSON de MySQL para que añadir nuevas plataformas (Instagram, Twitch,
+     * X...) no requiera modificar el esquema. Hibernate (de)serializa el
+     * Map automáticamente gracias a @JdbcTypeCode(SqlTypes.JSON).
+     *
+     * Ejemplos:
+     *   YouTube  -> {"publication_id": "ALeXzxKF5jg", "format": "video", "duration_seconds": 1974}
+     *   Blog     -> {}
+     *   Instagram (futuro) -> {"likes_count": 234, "media_type": "reel"}
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "extra_data", columnDefinition = "json")
+    private Map<String, Object> extraData = new HashMap<>();
 
     public Publication() {
     }
@@ -112,27 +123,11 @@ public class Publication {
         this.description = description;
     }
 
-    public String getPublicationId() {
-        return publicationId;
+    public Map<String, Object> getExtraData() {
+        return extraData;
     }
 
-    public void setPublicationId(String publicationId) {
-        this.publicationId = publicationId;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    public void setFormat(String format) {
-        this.format = format;
-    }
-
-    public Integer getDurationSeconds() {
-        return durationSeconds;
-    }
-
-    public void setDurationSeconds(Integer durationSeconds) {
-        this.durationSeconds = durationSeconds;
+    public void setExtraData(Map<String, Object> extraData) {
+        this.extraData = extraData == null ? new HashMap<>() : extraData;
     }
 }

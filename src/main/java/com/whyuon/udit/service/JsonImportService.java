@@ -25,6 +25,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class JsonImportService {
@@ -92,11 +95,7 @@ public class JsonImportService {
                     publication.setImageUrl(textOrNull(item, "image_url"));
                     publication.setDatePublished(parseDate(item.path("date_published").asText()));
                     publication.setDescription(textOrNull(item, "description"));
-                    publication.setPublicationId(textOrNull(item, "publication_id"));
-                    publication.setFormat(textOrNull(item, "format"));
-                    if (item.hasNonNull("duration")) {
-                        publication.setDurationSeconds(item.get("duration").asInt());
-                    }
+                    publication.setExtraData(buildExtraData(item));
 
                     Publication saved = publicationRepository.save(publication);
                     inserted++;
@@ -159,6 +158,71 @@ public class JsonImportService {
                 url,
                 textOrNull(authorNode, "image_url")
         )));
+    }
+
+    /**
+     * Construye el Map de atributos específicos de la plataforma a partir
+     * de los campos del JSON que NO son los comunes (platform, channel_id,
+     * channel_name, url, image_url, date_published, description, author).
+     *
+     * Para añadir una plataforma nueva (Instagram, Twitch, X...), basta con
+     * añadir un nuevo `case` aquí con sus campos. El esquema de BD no
+     * cambia: todo entra como JSON en la columna `extra_data`.
+     */
+    private Map<String, Object> buildExtraData(JsonNode item) {
+        Map<String, Object> extras = new LinkedHashMap<>();
+        String platform = item.path("platform").asText();
+
+        switch (platform.toLowerCase()) {
+            case "youtube" -> {
+                putIfPresent(extras, item, "publication_id");
+                putIfPresent(extras, item, "format");
+                if (item.hasNonNull("duration")) {
+                    extras.put("duration_seconds", item.get("duration").asInt());
+                }
+            }
+            case "blog" -> {
+                // Hoy los blogs no traen campos extra. Si en el futuro
+                // tuviesen (ej. reading_time), los añadiriamos aqui.
+            }
+            // Patron a seguir para nuevas plataformas:
+            // case "instagram" -> { putIfPresent(extras, item, "likes_count"); ... }
+            // case "twitch"    -> { putIfPresent(extras, item, "game_category"); ... }
+            // case "x"         -> { putIfPresent(extras, item, "retweets"); ... }
+            default -> {
+                // Plataforma desconocida: guardamos todos los campos no comunes
+                // tal cual, para no perder informacion mientras se ajusta el codigo.
+                item.fields().forEachRemaining(entry -> {
+                    String key = entry.getKey();
+                    if (!COMMON_FIELDS.contains(key)) {
+                        extras.put(key, entry.getValue());
+                    }
+                });
+            }
+        }
+        return extras;
+    }
+
+    private static final Set<String> COMMON_FIELDS = Set.of(
+            "platform", "channel_id", "channel_name", "url", "image_url",
+            "date_published", "description", "author"
+    );
+
+    private static void putIfPresent(Map<String, Object> target, JsonNode item, String field) {
+        if (item.hasNonNull(field)) {
+            JsonNode value = item.get(field);
+            if (value.isTextual()) {
+                target.put(field, value.asText());
+            } else if (value.isInt() || value.isLong()) {
+                target.put(field, value.asLong());
+            } else if (value.isNumber()) {
+                target.put(field, value.asDouble());
+            } else if (value.isBoolean()) {
+                target.put(field, value.asBoolean());
+            } else {
+                target.put(field, value);
+            }
+        }
     }
 
     private static String textOrNull(JsonNode node, String field) {

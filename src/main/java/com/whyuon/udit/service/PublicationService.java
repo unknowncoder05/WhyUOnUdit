@@ -113,13 +113,19 @@ public class PublicationService {
                 escapeCsv("URL")
         )).append('\n');
         for (PublicationResponse publication : getPublications()) {
+            Map<String, Object> extras = publication.extraData();
+            String format = extras != null && extras.get("format") != null
+                    ? extras.get("format").toString() : "";
+            Integer durationSeconds = extras != null && extras.get("duration_seconds") instanceof Number n
+                    ? n.intValue() : null;
+
             csv.append(escapeCsv(capitalizePlatform(publication.platform()))).append(';')
                     .append(escapeCsv(publication.channelName())).append(';')
                     .append(escapeCsv(publication.authorName())).append(';')
                     .append(escapeCsv(publication.title())).append(';')
                     .append(escapeCsv(formatDate(publication.datePublished()))).append(';')
-                    .append(escapeCsv(publication.format())).append(';')
-                    .append(escapeCsv(formatDuration(publication.durationSeconds()))).append(';')
+                    .append(escapeCsv(format)).append(';')
+                    .append(escapeCsv(formatDuration(durationSeconds))).append(';')
                     .append(escapeCsv(publication.url()))
                     .append('\n');
         }
@@ -162,8 +168,7 @@ public class PublicationService {
                 publication.getUrl(),
                 publication.getImageUrl(),
                 publication.getDescription(),
-                publication.getFormat(),
-                publication.getDurationSeconds(),
+                publication.getExtraData(),
                 publication.getDatePublished()
         );
     }
