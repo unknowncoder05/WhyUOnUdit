@@ -3,6 +3,7 @@ package com.whyuon.udit.service;
 import com.whyuon.udit.dto.ChannelSummaryResponse;
 import com.whyuon.udit.dto.PaginatedPublicationsResponse;
 import com.whyuon.udit.dto.PublicationResponse;
+import com.whyuon.udit.dto.StatsResponse;
 import com.whyuon.udit.model.Channel;
 import com.whyuon.udit.model.Publication;
 import com.whyuon.udit.repository.PublicationRepository;
@@ -12,7 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -99,7 +102,28 @@ public class PublicationService {
         return response;
     }
 
-    public String buildCsvReport() {
+    /**
+     * Construye el CSV aplicando filtros opcionales. Si todos los
+     * parámetros son null o cadena vacía, se devuelve el listado
+     * completo (comportamiento equivalente al endpoint sin parámetros).
+     *
+     *   platform: coincidencia exacta del código ('youtube', 'blog', ...).
+     *   channel:  coincidencia parcial sobre el nombre del canal,
+     *             case-insensitive.
+     *   from/to:  rango por fecha de publicación.
+     */
+    public String buildCsvReport(String platform, String channel, LocalDate from, LocalDate to) {
+        LocalDateTime fromDateTime = from != null ? from.atStartOfDay()       : null;
+        LocalDateTime toDateTime   = to   != null ? to.atTime(LocalTime.MAX)   : null;
+        String platformFilter      = isBlank(platform) ? null : platform;
+        String channelFilter       = isBlank(channel)  ? null : channel;
+
+        List<PublicationResponse> publications = publicationRepository
+                .findForReport(platformFilter, channelFilter, fromDateTime, toDateTime)
+                .stream()
+                .map(this::toPublicationResponse)
+                .toList();
+
         StringBuilder csv = new StringBuilder();
         csv.append('\uFEFF'); // BOM UTF-8 para que Excel reconozca tildes y eñes
         csv.append(String.join(";",
@@ -112,7 +136,7 @@ public class PublicationService {
                 escapeCsv("Duración"),
                 escapeCsv("URL")
         )).append('\n');
-        for (PublicationResponse publication : getPublications()) {
+        for (PublicationResponse publication : publications) {
             Map<String, Object> extras = publication.extraData();
             String format = extras != null && extras.get("format") != null
                     ? extras.get("format").toString() : "";
@@ -130,6 +154,82 @@ public class PublicationService {
                     .append('\n');
         }
         return csv.toString();
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
+    }
+
+    /**
+     * Devuelve un resumen estadístico aplicando los mismos filtros que el
+     * CSV. Pensado para el dashboard: cuando el usuario cambia los filtros
+     * y pulsa Aplicar, el frontend pide estos números para pintarlos en
+     * tarjetas y barras.
+     */
+    public StatsResponse getStats(String platform, String channel, LocalDate from, LocalDate to) {
+        LocalDateTime fromDateTime = from != null ? from.atStartOfDay()     : null;
+        LocalDateTime toDateTime   = to   != null ? to.atTime(LocalTime.MAX) : null;
+        String platformFilter      = isBlank(platform) ? null : platform;
+        String channelFilter       = isBlank(channel)  ? null : channel;
+
+        List<Publication> publications = publicationRepository.findForReport(
+                platformFilter, channelFilter, fromDateTime, toDateTime
+        );
+
+        // Conteo por plataforma. LinkedHashMap mantiene orden estable.
+        Map<String, Long> byPlatform = new LinkedHashMap<>();
+        Map<Long, ChannelCounter> channelCounters = new LinkedHashMap<>();
+        LocalDateTime earliest = null;
+        LocalDateTime latest   = null;
+
+        for (Publication p : publications) {
+            String platformCode = p.getChannel().getPlatform().getCode();
+            byPlatform.merge(platformCode, 1L, Long::sum);
+
+            Channel c = p.getChannel();
+            channelCounters.computeIfAbsent(
+                    c.getId(),
+                    ignored -> new ChannelCounter(c.getName(), platformCode)
+            ).increment();
+
+            if (earliest == null || p.getDatePublished().isBefore(earliest)) {
+                earliest = p.getDatePublished();
+            }
+            if (latest == null || p.getDatePublished().isAfter(latest)) {
+                latest = p.getDatePublished();
+            }
+        }
+
+        // Ordenamos por cuenta descendente para que el dashboard pinte
+        // primero el canal más activo.
+        List<StatsResponse.ChannelCount> byChannel = channelCounters.values().stream()
+                .sorted((a, b) -> Long.compare(b.count, a.count))
+                .map(cc -> new StatsResponse.ChannelCount(cc.name, cc.platformCode, cc.count))
+                .toList();
+
+        return new StatsResponse(
+                publications.size(),
+                byPlatform,
+                byChannel,
+                earliest,
+                latest
+        );
+    }
+
+    private static final class ChannelCounter {
+        private final String name;
+        private final String platformCode;
+        private long count;
+
+        ChannelCounter(String name, String platformCode) {
+            this.name = name;
+            this.platformCode = platformCode;
+            this.count = 0;
+        }
+
+        void increment() {
+            count++;
+        }
     }
 
     private String formatDate(LocalDateTime dateTime) {
