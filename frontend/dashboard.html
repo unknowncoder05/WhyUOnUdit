@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard · WhyUOn</title>
+    <link rel="stylesheet" href="css/style.css?v=11">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="header__brand">
+                <img class="header__logo" src="img/whyuon_logo.svg" alt="WhyUOn">
+                <h1>WHYUON</h1>
+            </div>
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a data-api-href="/swagger-ui.html" href="#" target="_blank" rel="noreferrer">API</a></li>
+            </ul>
+            <a href="index.html" class="btn-login btn-login--ghost">← Volver</a>
+        </nav>
+    </header>
+
+    <main class="layout">
+        <section class="hero">
+            <div>
+                <p class="hero__eyebrow">Dashboard</p>
+                <h2>Filtra, revisa y exporta el informe</h2>
+                <p class="hero__copy">
+                    Aplica los filtros que necesites: las estadísticas se actualizan en vivo
+                    y el botón de descarga genera el CSV con exactamente lo que estás viendo.
+                </p>
+            </div>
+        </section>
+
+        <section class="dashboard__filters">
+            <p class="section__eyebrow">Filtros</p>
+            <form id="dashboard-form">
+                <div class="dashboard__filters-row">
+                    <label class="dashboard__field">
+                        <span>Plataforma <small>(opcional)</small></span>
+                        <select name="platform" id="filter-platform">
+                            <option value="">Todas</option>
+                        </select>
+                    </label>
+                    <label class="dashboard__field">
+                        <span>Canal <small>(opcional)</small></span>
+                        <select name="channel" id="filter-channel">
+                            <option value="">Todos</option>
+                        </select>
+                    </label>
+                    <label class="dashboard__field">
+                        <span>Desde <small>(opcional)</small></span>
+                        <input type="date" name="from" id="filter-from">
+                    </label>
+                    <label class="dashboard__field">
+                        <span>Hasta <small>(opcional)</small></span>
+                        <input type="date" name="to" id="filter-to">
+                    </label>
+                </div>
+                <div class="dashboard__filters-actions">
+                    <button type="reset" class="dashboard__btn dashboard__btn--ghost">Limpiar</button>
+                    <button type="submit" class="dashboard__btn dashboard__btn--primary">Aplicar</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="dashboard__summary">
+            <p class="section__eyebrow">Resumen</p>
+            <div class="dashboard__cards" id="dashboard-cards">
+                <article class="dashboard__card">
+                    <span class="dashboard__card-value" id="stats-total">—</span>
+                    <p class="dashboard__card-label">Total publicaciones</p>
+                </article>
+                <article class="dashboard__card">
+                    <span class="dashboard__card-value" id="stats-youtube">—</span>
+                    <p class="dashboard__card-label">YouTube</p>
+                </article>
+                <article class="dashboard__card">
+                    <span class="dashboard__card-value" id="stats-blog">—</span>
+                    <p class="dashboard__card-label">Blog</p>
+                </article>
+                <article class="dashboard__card">
+                    <span class="dashboard__card-value dashboard__card-value--small" id="stats-period">—</span>
+                    <p class="dashboard__card-label">Periodo</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="dashboard__channels">
+            <p class="section__eyebrow">Distribución por canal</p>
+            <ul class="dashboard__bars" id="dashboard-bars">
+                <li class="dashboard__bars-empty">Aplica filtros para ver la distribución.</li>
+            </ul>
+        </section>
+
+        <section class="dashboard__download">
+            <p id="dashboard-download-summary">Descarga el CSV con los filtros aplicados.</p>
+            <button type="button" id="download-csv-btn" class="dashboard__btn dashboard__btn--primary dashboard__btn--lg">
+                Descargar CSV
+            </button>
+        </section>
+    </main>
+
+    <script src="js/dashboard.js?v=11"></script>
+</body>
+</html>

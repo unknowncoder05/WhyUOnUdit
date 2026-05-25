@@ -79,7 +79,8 @@ Equivale a `docker compose up --build -d`. Al terminar:
 
 | Servicio | URL |
 |---|---|
-| Frontend | http://localhost:3000 |
+| Frontend (listado) | http://localhost:3000 |
+| Frontend (dashboard de exportación) | http://localhost:3000/dashboard.html |
 | Backend / API | http://localhost:8000/api |
 | Swagger UI | http://localhost:8000/swagger-ui.html |
 | MySQL (cliente externo) | localhost:3307 (`root` / `root`, BD `miniwhyuon`) |
@@ -110,10 +111,30 @@ La primera vez tarda unos minutos porque descarga las imagenes base y compila el
 |---|---|---|
 | GET | `/api/publications?page=0&size=12` | Listado paginado, ordenado por fecha descendente |
 | GET | `/api/channels` | Resumen de canales con conteo de publicaciones |
-| GET | `/api/reports/publications.csv` | Descarga del informe en CSV (UTF-8 + BOM, separador `;`) |
+| GET | `/api/stats` | Resumen estadístico (total, por plataforma, top canales, periodo). Acepta los mismos filtros que el CSV |
+| GET | `/api/reports/publications.csv` | Descarga del informe en CSV (UTF-8 + BOM, separador `;`). Acepta filtros opcionales `?platform=`, `?channel=`, `?from=`, `?to=` (ver abajo) |
 | POST | `/api/import?path=...` | Reimporta el JSON (classpath o ruta del filesystem) |
 
 Documentacion interactiva: http://localhost:8000/swagger-ui.html
+
+### Filtros del informe CSV
+
+El endpoint `/api/reports/publications.csv` acepta hasta cuatro parámetros opcionales para que el cliente descargue solo lo que necesita. Si no se pasa ninguno, devuelve todas las publicaciones.
+
+| Parámetro  | Tipo     | Significado                                                  | Ejemplo                  |
+|------------|----------|--------------------------------------------------------------|--------------------------|
+| `platform` | string   | Código de plataforma exacto                                  | `?platform=youtube`      |
+| `channel`  | string   | Coincidencia parcial en el nombre del canal, no diferencia mayúsculas | `?channel=Stryd`  |
+| `from`     | date ISO | Solo publicaciones a partir de esa fecha (inclusive)          | `?from=2026-01-01`       |
+| `to`       | date ISO | Solo publicaciones hasta esa fecha (inclusive)                | `?to=2026-04-30`         |
+
+Se pueden combinar:
+
+```
+GET /api/reports/publications.csv?platform=blog&from=2026-04-01
+GET /api/reports/publications.csv?channel=Territorio&to=2026-04-30
+GET /api/reports/publications.csv?platform=youtube&from=2025-01-01&to=2025-12-31
+```
 
 ## Configuracion (variables de entorno)
 
